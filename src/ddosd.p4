@@ -15,9 +15,9 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
 
     // Observation Window Parameters
     register<bit<5>>(1) log2_m;
+    register<bit<32>>(1) training_len;
 
     // Observation Window Control
-    register<bit<32>>(1) training_len;
     register<bit<32>>(1) ow_counter;
     register<bit<32>>(1) packet_counter;
 
@@ -31,7 +31,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
     register<int<32>>(CS_WIDTH) dst_cs3;
     register<int<32>>(CS_WIDTH) dst_cs4;
 
-    // Count Sketch Counters Observation Window Annotation
+    // Count Sketch Observation Window Annotation
     register<bit<8>>(CS_WIDTH) src_cs1_ow;
     register<bit<8>>(CS_WIDTH) src_cs2_ow;
     register<bit<8>>(CS_WIDTH) src_cs3_ow;
@@ -41,19 +41,19 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
     register<bit<8>>(CS_WIDTH) dst_cs3_ow;
     register<bit<8>>(CS_WIDTH) dst_cs4_ow;
 
-    // Entropy Norms - Fixed point representation: 28 integer bits, 4 decimal bits.
+    // Entropy Norms - Fixed point representation: 28 integer bits, 4 fractional bits.
     register<bit<32>>(1) src_S;
     register<bit<32>>(1) dst_S;
 
-    // Entropy EWMA and EWMMD - Fixed point representation: 14 integer bits, 18 decimal bits.
+    // Entropy EWMA and EWMMD - Fixed point representation: 14 integer bits, 18 fractional bits.
     register<bit<32>>(1) src_ewma;
     register<bit<32>>(1) src_ewmmd;
     register<bit<32>>(1) dst_ewma;
     register<bit<32>>(1) dst_ewmmd;
 
     // Smoothing and Sensitivity Coefficients
-    register<bit<8>>(1) alpha;    // Fixed point representation: 0 integer bits, 8 decimal bits.
-    register<bit<8>>(1) k;        // Fixed point representation: 5 integer bits, 3 decimal bits.
+    register<bit<8>>(1) alpha;    // Fixed point representation: 0 integer bits, 8 fractional bits.
+    register<bit<8>>(1) k;        // Fixed point representation: 5 integer bits, 3 fractional bits.
 
     action drop() {
         mark_to_drop();
