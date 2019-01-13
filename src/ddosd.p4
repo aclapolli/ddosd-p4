@@ -14,7 +14,6 @@ control verifyChecksum(inout headers hdr, inout metadata meta) {
 control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
 
     // Observation Window Parameters
-    register<bit<32>>(1) m;
     register<bit<5>>(1) log2_m;
 
     // Observation Window Control
@@ -342,20 +341,20 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
 
 
             // Observation Window Size
-            bit<32> m_aux;
-            m.read(m_aux, 0);
+            bit<32> m;
+            bit<5> log2_m_aux;
+            log2_m.read(log2_m_aux, 0);
+            m = 32w1 << log2_m_aux;
 
             // Packet Count
             packet_counter.read(meta.packet_num, 0);
             meta.packet_num = meta.packet_num + 1;
-            if (meta.packet_num != m_aux) {
+
+            if (meta.packet_num != m) {
                 packet_counter.write(0, meta.packet_num);
             } else {    // End of Observation Window
                 current_ow = current_ow + 1;
                 ow_counter.write(0, current_ow);
-
-                bit<5> log2_m_aux;
-                log2_m.read(log2_m_aux, 0);
 
                 meta.src_entropy = ((bit<32>)log2_m_aux << 4) - (src_S_aux >> log2_m_aux);
                 meta.dst_entropy = ((bit<32>)log2_m_aux << 4) - (dst_S_aux >> log2_m_aux);

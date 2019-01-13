@@ -1,6 +1,5 @@
 mirroring_add 250 2
 
-register_write ingress.m 0 262144
 register_write ingress.log2_m 0 18
 register_write ingress.training_len 0 250
 register_write ingress.alpha 0 20
