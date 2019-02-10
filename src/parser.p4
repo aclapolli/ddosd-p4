@@ -6,9 +6,9 @@
 #define ETHERTYPE_IPV4 0x0800
 #define ETHERTYPE_DDOSD 0x6605
 
-parser ParserImpl(packet_in packet, out headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
+parser ParserImpl(packet_in pkt, out headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
     state start {
-        packet.extract(hdr.ethernet);
+        pkt.extract(hdr.ethernet);
         transition select(hdr.ethernet.ether_type) {
             ETHERTYPE_DDOSD: parse_ddosd;
             ETHERTYPE_IPV4: parse_ipv4;
@@ -17,7 +17,7 @@ parser ParserImpl(packet_in packet, out headers hdr, inout metadata meta, inout 
     }
 
     state parse_ddosd {
-        packet.extract(hdr.ddosd);
+        pkt.extract(hdr.ddosd);
         transition select(hdr.ddosd.ether_type) {
             ETHERTYPE_IPV4: parse_ipv4;
             default: accept;
@@ -25,7 +25,7 @@ parser ParserImpl(packet_in packet, out headers hdr, inout metadata meta, inout 
     }
 
     state parse_ipv4 {
-        packet.extract(hdr.ipv4);
+        pkt.extract(hdr.ipv4);
         transition accept;
     }
 }

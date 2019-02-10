@@ -19,7 +19,7 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
 
     // Observation Window Control
     register<bit<32>>(1) ow_counter;
-    register<bit<32>>(1) packet_counter;
+    register<bit<32>>(1) pkt_counter;
 
     // Count Sketch Counters
     register<int<32>>(CS_WIDTH) src_cs1;
@@ -101,17 +101,17 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
     }
 
     action cs_hash(in bit<32> ipv4_addr, out bit<32> h1, out bit<32> h2, out bit<32> h3, out bit<32> h4) {
-        hash(h1, HashAlgorithm.hash1, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(h2, HashAlgorithm.hash2, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(h3, HashAlgorithm.hash3, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(h4, HashAlgorithm.hash4, 32w0, {ipv4_addr}, 32w4294967295);
+        hash(h1, HashAlgorithm.h1, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(h2, HashAlgorithm.h2, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(h3, HashAlgorithm.h3, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(h4, HashAlgorithm.h4, 32w0, {ipv4_addr}, 32w0xffffffff);
     }
 
     action cs_ghash(in bit<32> ipv4_addr, out int<32> g1, out int<32> g2, out int<32> g3, out int<32> g4) {
-        hash(g1, HashAlgorithm.ghash1, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(g2, HashAlgorithm.ghash2, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(g3, HashAlgorithm.ghash3, 32w0, {ipv4_addr}, 32w4294967295);
-        hash(g4, HashAlgorithm.ghash4, 32w0, {ipv4_addr}, 32w4294967295);
+        hash(g1, HashAlgorithm.g1, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(g2, HashAlgorithm.g2, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(g3, HashAlgorithm.g3, 32w0, {ipv4_addr}, 32w0xffffffff);
+        hash(g4, HashAlgorithm.g4, 32w0, {ipv4_addr}, 32w0xffffffff);
 
         // As ghash outputs 0 or 1, we must map 0 to -1.
         g1 = 2*g1 - 1;
@@ -347,11 +347,11 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
             m = 32w1 << log2_m_aux;
 
             // Packet Count
-            packet_counter.read(meta.packet_num, 0);
-            meta.packet_num = meta.packet_num + 1;
+            pkt_counter.read(meta.pkt_num, 0);
+            meta.pkt_num = meta.pkt_num + 1;
 
-            if (meta.packet_num != m) {
-                packet_counter.write(0, meta.packet_num);
+            if (meta.pkt_num != m) {
+                pkt_counter.write(0, meta.pkt_num);
             } else {    // End of Observation Window
                 current_ow = current_ow + 1;
                 ow_counter.write(0, current_ow);
@@ -411,10 +411,10 @@ control ingress(inout headers hdr, inout metadata meta, inout standard_metadata_
                 dst_ewma.write(0, meta.dst_ewma);
                 dst_ewmmd.write(0, meta.dst_ewmmd);
 
-                clone3(CloneType.I2E, CPU_SESSION, { meta.packet_num, meta.src_entropy, meta.src_ewma, meta.src_ewmmd, meta.dst_entropy, meta.dst_ewma, meta.dst_ewmmd, meta.alarm });
+                clone3(CloneType.I2E, CPU_SESSION, { meta.pkt_num, meta.src_entropy, meta.src_ewma, meta.src_ewmmd, meta.dst_entropy, meta.dst_ewma, meta.dst_ewmmd, meta.alarm });
 
                 // Reset
-                packet_counter.write(0, 0);
+                pkt_counter.write(0, 0);
                 src_S.write(0, 0);
                 dst_S.write(0, 0);
             }
@@ -430,7 +430,7 @@ control egress(inout headers hdr, inout metadata meta, inout standard_metadata_t
     apply {
         if (standard_metadata.instance_type == CLONE) {
             hdr.ddosd.setValid();
-            hdr.ddosd.packet_num = meta.packet_num;
+            hdr.ddosd.pkt_num = meta.pkt_num;
             hdr.ddosd.src_entropy = meta.src_entropy;
             hdr.ddosd.src_ewma = meta.src_ewma;
             hdr.ddosd.src_ewmmd = meta.src_ewmmd;
@@ -450,9 +450,9 @@ control computeChecksum(inout headers  hdr, inout metadata meta) {
     }
 }
 
-control DeparserImpl(packet_out packet, in headers hdr) {
+control DeparserImpl(packet_out pkt, in headers hdr) {
     apply {
-        packet.emit(hdr);
+        pkt.emit(hdr);
     }
 }
 

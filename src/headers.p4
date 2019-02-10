@@ -7,9 +7,9 @@ header ethernet_t {
     bit<16> ether_type;
 }
 
-// Custom EtherType 0x6605
+// EtherType 0x6605
 header ddosd_t {
-    bit<32> packet_num;
+    bit<32> pkt_num;
     bit<32> src_entropy;
     bit<32> src_ewma;
     bit<32> src_ewmmd;
@@ -45,7 +45,7 @@ struct headers {
 struct metadata {
     int<32> ip_count;
     bit<32> entropy_term;
-    bit<32> packet_num;
+    bit<32> pkt_num;
     bit<32> src_entropy;
     bit<32> src_ewma;
     bit<32> src_ewmmd;
