@@ -1,7 +1,8 @@
 # ddosd-p4
-This is the P4 description of a real-time in-network DDoS attack detection mechanism as proposed within "Offloading Real-time DDoS Attack Detection to Programmable Data Planes".
+This is the P4 description of a real-time in-network DDoS attack detection mechanism as proposed within the paper "Offloading Real-time DDoS Attack Detection to Programmable Data Planes" (IM 2019).
 The target is the `simple_switch` variation of the P4 behavioral model software reference implementation (bmv2).
 Since production performance has not been a design goal of bmv2, this is a proof of concept in terms of data-plane implementation feasibility conforming to P4 primitives.
+A functional equivalent C++ implementation is available at [ddosd-cpp](https://github.com/aclapolli/ddosd-cpp) enabling thorough evaluation.
 
 ## Getting Started
 
@@ -60,6 +61,15 @@ Ensure that both the `simple_switch` and the `simple_switch_CLI` binaries are wi
 simple_switch [options] ./build/ddosd.json
 ```
 Don't forget to install rules via the `simple_switch_CLI` tool to parameterize the detection mechanism and populate the LPM lookup table used for entropy estimation (see [control_rules.txt](scripts/control_rules.txt) for examples).
+
+## Troubleshooting
+There is a known bug in Ubuntu's 16.04 LLVM 3.8 packaging which may cause an [error](https://stackoverflow.com/questions/38171543/error-when-using-cmake-with-llvm) while executing `cmake`.
+For dealing with this problem, we suggest upgrading to the LLVM 3.9 version executing the following commands:
+```
+sudo apt-get remove llvm
+sudo apt-get autoremove
+sudo apt-get install llvm-3.9
+```
 
 ## License
 This repository is licensed under the GNU General Public License v3.0 (check [LICENSE](LICENSE) for details).
